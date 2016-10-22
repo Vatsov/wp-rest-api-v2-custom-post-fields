@@ -25,17 +25,23 @@ class CustomPostDataPlugin {
 	}
 
 	function add_custom_data() {
-		// Register the post type fields
-		register_rest_field('post', 'custom_fields', array(
-				'get_callback' => array( $this, 'get_custom_data' ),
-				'update_callback' => array( $this, 'update_custom_data' ),
-				'schema' => array(
-					'description' => 'My custom field',
-					'type' => 'string',
-					'context' => array('view', 'edit')
-				)
-			)
-		);
+		// Register the type fields
+		$post_types = get_post_types( array( 'public' => true ), 'objects' );
+
+		foreach($post_types as $post_type) {
+			$post_type_name = $post_type->name;
+			$show_in_rest		= ( isset( $post_type->show_in_rest ) && $post_type->show_in_rest ) ? true : false;
+
+			if ( $show_in_rest ) {
+				register_rest_field($post_type_name,
+					'acf_fields', array(
+						'get_callback' => array($this, 'get_custom_data'),
+						'update_callback' => array($this, 'update_custom_data'),
+						'schema' => null
+					)
+				);
+			}
+		}
 	}
 
 	/**
